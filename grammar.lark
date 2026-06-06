@@ -1,0 +1,22 @@
+// grammar.lark
+
+// 1. The Entry Point: A program is just a list of one or more instructions.
+start: instruction+
+
+// 2. The Choices: An instruction can be one of these three commands.
+?instruction: load_cmd
+            | chunk_cmd
+            | agent_cmd
+
+// 3. The Rules: What does each command actually look like?
+load_cmd: "LOAD" STRING
+chunk_cmd: "CHUNK" INT "OVERLAP" INT
+agent_cmd: "AGENT" STRING "MODEL" STRING
+
+// 4. Terminals: Defining what Strings and Numbers look like using Regular Expressions
+STRING: /"[^"\\]*(?:\\.[^"\\]*)*"/
+INT: /[0-9]+/
+
+// 5. Cleanup: Tell the parser to ignore spaces and new lines
+%import common.WS
+%ignore WS
