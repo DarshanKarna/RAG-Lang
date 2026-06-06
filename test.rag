@@ -1,0 +1,3 @@
+LOAD "./my_documents"
+CHUNK 500 OVERLAP 50
+AGENT "Support_Bot" MODEL "gpt-4o"
