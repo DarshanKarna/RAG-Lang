@@ -8,7 +8,7 @@ PIPELINE_STATE = {
 }
 
 def load_documents(filepath):
-    print(f"📄 Opening PDF: '{filepath}'...")
+    print(f"Opening PDF: '{filepath}'...")
     
     # 1. Open the PDF using PyMuPDF
     doc = fitz.open(filepath)
