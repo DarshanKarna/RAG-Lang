@@ -1,3 +1,4 @@
 LOAD "./my-documents/sample.pdf"
 CHUNK 500 OVERLAP 50
 AGENT "Support_Bot" MODEL "gpt-4o"
+QUERY "Can you summarize the main points of this document?"
