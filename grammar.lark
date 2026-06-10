@@ -3,15 +3,17 @@
 // 1. The Entry Point: A program is just a list of one or more instructions.
 start: instruction+
 
-// 2. The Choices: An instruction can be one of these three commands.
+// 2. The Choices: An instruction can be one of these four commands.
 ?instruction: load_cmd
             | chunk_cmd
             | agent_cmd
+            | query_cmd
 
 // 3. The Rules: What does each command actually look like?
 load_cmd: "LOAD" STRING
 chunk_cmd: "CHUNK" INT "OVERLAP" INT
 agent_cmd: "AGENT" STRING "MODEL" STRING
+query_cmd: "QUERY" STRING
 
 // 4. Terminals: Defining what Strings and Numbers look like using Regular Expressions
 STRING: /"[^"\\]*(?:\\.[^"\\]*)*"/
