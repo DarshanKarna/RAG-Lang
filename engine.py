@@ -1,6 +1,9 @@
+import sys
 import fitz  # PyMuPDF
 from lark import Lark
 from parser import RAGTransformer
+
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.prompts import ChatPromptTemplate
 
