@@ -2,15 +2,12 @@ import fitz  # PyMuPDF
 from lark import Lark
 from parser import RAGTransformer
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-# 1. NEW: Import LangChain core components for our Agent
 from langchain_core.prompts import ChatPromptTemplate
 
-# Global memory
 PIPELINE_STATE = {
     "raw_text": "",
     "text_chunks": [],
-    "agent_config": None  # NEW: A place to store our Agent's brain
+    "agent_config": None
 }
 
 def load_documents(filepath):
@@ -30,27 +27,40 @@ def configure_chunking(size, overlap):
     PIPELINE_STATE["text_chunks"] = chunks
     print(f"   -> Success: Sliced text into {len(chunks)} distinct blocks.\n")
 
-# 2. NEW: The Agent Configuration Function
 def initialize_agent(name, model):
     print(f"🤖 [Agent Framework] Configuring '{name}' with LLM: '{model}'...")
-    
-    # Dynamically build the system instructions using the name from the DSL
     system_instructions = f"You are {name}, an expert AI assistant. Answer the user's questions based ONLY on the provided document chunks."
-    
-    # Create a real LangChain Prompt Template
     prompt_template = ChatPromptTemplate.from_messages([
         ("system", system_instructions),
         ("human", "Context: {context}\n\nQuestion: {user_query}")
     ])
+    PIPELINE_STATE["agent_config"] = {"prompt": prompt_template, "model_type": model}
+    print(f"   -> Success: LangChain Prompt built.\n")
+
+# ==========================================
+# NEW: The Query Execution Function
+# ==========================================
+def run_query(question):
+    print(f"🔎 [Execution] Running Query: '{question}'...")
     
-    # Save it to our state memory so it is ready to use
-    PIPELINE_STATE["agent_config"] = {
-        "prompt": prompt_template,
-        "model_type": model
-    }
+    # 1. Grab the Agent's brain
+    agent_prompt = PIPELINE_STATE["agent_config"]["prompt"]
     
-    print(f"   -> Success: LangChain Prompt built for {name}.\n")
-    print(f"Preview of System Prompt:\n\"{system_instructions}\"\n")
+    # 2. Simulate Retrieval: Grab the first 2 chunks of our PDF to act as context
+    retrieved_context = "\n\n".join(PIPELINE_STATE["text_chunks"][:2])
+    
+    # 3. Format the final payload for the LLM
+    final_payload = agent_prompt.format_messages(
+        context=retrieved_context,
+        user_query=question
+    )
+    
+    print("   -> Success: RAG Context Successfully Merged!\n")
+    print("================ FINAL LLM PAYLOAD ================")
+    print(final_payload[0].content) # Prints the System prompt
+    print("-" * 50)
+    print(final_payload[1].content) # Prints the Context + User Question
+    print("===================================================\n")
 
 def execute_pipeline(ast):
     for step in ast:
@@ -58,14 +68,15 @@ def execute_pipeline(ast):
             load_documents(step["path"])
         elif step.get("action") == "configure_chunking":
             configure_chunking(step["chunk_size"], step["overlap"])
-        # 3. NEW: Route the agent command to our new function
         elif step.get("action") == "initialize_agent":
             initialize_agent(step["agent_name"], step["model_type"])
+        # NEW: Route the query command
+        elif step.get("action") == "run_query":
+            run_query(step["question"])
 
 if __name__ == "__main__":
     with open("grammar.lark", "r") as f:
         grammar = f.read()
-        
     with open("test.rag", "r") as f:
         script_content = f.read()
 
